@@ -1,120 +1,43 @@
-import requests
-from bs4 import BeautifulSoup
 import pandas as pd
 
 
 # Define the Player parent class
 class Player:
-    def __init__(
-        self,
-        name,
-        nationality,
-        position,
-        squad,
-        age,
-        born,
-        matches_played,
-        starts,
-        minutes,
-        goals,
-        assists,
-        yellow_card,
-        red_card,
-        xG,
-        npxG,
-        xAG,
-        PrgC,
-        PrgP,
-        PrgR,
-    ):
-        self.name = name
-        self.position = position
-        self.age = age
-        self.nationality = nationality
-        self.squad = squad
-        self.born = born
-        self.matches_played = matches_played
-        self.started = starts
-        self.minutes = minutes
-        self.goals = goals
-        self.assists = assists
-        self.ycards = yellow_card
-        self.rcards = red_card
-        self.xG = xG
-        self.npxG = npxG
-        self.xAG = xAG
-        self.PrgC = PrgC
-        self.PrgP = PrgP
-        self.PrgR = PrgR
+    def __init__(self, row):
+        self.id = row["id"]  # Player ID
+        self.player = row["Player"]  # Player Name
+        self.nation = row["Nation"]  # Nationality
+        self.pos = row["Pos"]  # Position
+        self.squad = row["Squad"]  # Squad
+        self.age = row["Age"]  # Age
+        self.born = row["Born"]  # Born
+        self.matches_played = row["MP"]  # Matches Played
+        self.starts = row["Starts"]  # Starts
+        self.minutes = row["Min"]  # Minutes Played
+        self.goals = row["Gls"]  # Goals
+        self.assists = row["Ast"]  # Assists
+        self.yellow_card = row["CrdY"]  # Yellow Cards
+        self.red_card = row["CrdR"]  # Red Cards
+        self.xG = row["xG"]  # Expected Goals
+        self.npxG = row["npxG"]  # Non-Penalty Expected Goals
+        self.xAG = row["xAG"]  # Expected Assists
+        self.PrgC = row["PrgC"]  # Progressive Carries
+        self.PrgP = row["PrgP"]  # Progressive Passes
+        self.PrgR = row["PrgR"]  # Progressive Receptions
 
     def __str__(self):
-        return f"{self.name} ({self.nationality}) - {self.position} - Age: {self.age}"
+        return f"{self.player} ({self.nation}) - {self.pos} - Age: {self.age}"
 
 
 # Define the Striker sub-class
 class Striker(Player):
-    def __init__(
-        self,
-        name,
-        nationality,
-        position,
-        squad,
-        age,
-        born,
-        matches_played,
-        starts,
-        minutes,
-        goals,
-        assists,
-        yellow_card,
-        red_card,
-        xG,
-        npxG,
-        xAG,
-        PrgC,
-        PrgP,
-        PrgR,
-        Gls,
-        sh,
-        Sot,
-        SoTPCT,
-        GperShot,
-        Dist,
-        FK,
-        PK,
-        PKatt,
-    ):
-        super().__init__(
-            self,
-            name,
-            nationality,
-            position,
-            squad,
-            age,
-            born,
-            matches_played,
-            starts,
-            minutes,
-            goals,
-            assists,
-            yellow_card,
-            red_card,
-            xG,
-            npxG,
-            xAG,
-            PrgC,
-            PrgP,
-            PrgR,
-        )
-        self.goals = goals
-        self.shots = sh
-        self.shots_on_target = Sot
-        self.shots_on_target_pct = SoTPCT
-        self.goals_per_shot = GperShot
-        self.distance = Dist
-        self.free_kicks = FK
-        self.penalties = PK
-        self.penalties_attempted = PKatt
+    def __init__(self, row):
+        super().__init__(row)
+        self.shots = row["Sh"]  # Shots
+        self.shots_on_target = row["SoT"]  # Shots on Target
+        self.shots_on_target_pct = row["SoT%"]  # Shots on Target %
+        self.goals_per_shot_on_target = row["G/SoT"]  # Goals per Shot on Target
+        self.goals_per_shot = row["G/Sh"]  # Goals per Shot
 
     def __str__(self):
         return f"{super().__str__()} - Goals: {self.goals} - Shots: {self.shots}"
@@ -122,66 +45,19 @@ class Striker(Player):
 
 # Define the Midfielder sub-class
 class Midfielder(Player):
-    def __init__(
-        self,
-        name,
-        nationality,
-        position,
-        squad,
-        age,
-        born,
-        matches_played,
-        starts,
-        minutes,
-        goals,
-        assists,
-        yellow_card,
-        red_card,
-        xG,
-        npxG,
-        xAG,
-        PrgC,
-        PrgP,
-        PrgR,
-        cmp,
-        att,
-        totdist,
-        prgdist,
-        kp,
-        finalthird,
-        ppa,
-        crspa,
-    ):
-        super().__init__(
-            self,
-            name,
-            nationality,
-            position,
-            squad,
-            age,
-            born,
-            matches_played,
-            starts,
-            minutes,
-            goals,
-            assists,
-            yellow_card,
-            red_card,
-            xG,
-            npxG,
-            xAG,
-            PrgC,
-            PrgP,
-            PrgR,
-        )
-        self.passes_completed = cmp
-        self.passed_attempted = att
-        self.total_passing_distance = totdist
-        self.progressive_passing_distance = prgdist
-        self.key_passes = kp
-        self.final_third_passes = finalthird
-        self.passes_into_penalty_area = ppa
-        self.crosses_into_penalty_area = crspa
+    def __init__(self, row):
+        super().__init__(row)
+        self.passes_completed = row["Cmp"]  # Passes Completed
+        self.passed_attempted = row["Att"]  # Passes Attempted
+        self.passes_completed_pct = row["Cmp%"]  # Passes Completed %
+        self.total_passing_distance = row["TotDist"]
+        self.progressive_passing_distance = row[
+            "PrgDist"
+        ]  # Progressive Passing Distance
+        self.key_passes = row["KP"]  # Key Passes
+        self.final_third_passes = row["1/3"]  # Final Third Passes
+        self.passes_into_penalty_area = row["PPA"]  # Passes into Penalty Area
+        self.crosses_into_penalty_area = row["CrsPA"]  # Crosses into Penalty Area
 
     def __str__(self):
         return f"{super().__str__()} - Passes: {self.passes} - Tackles: {self.tackles}"
@@ -189,64 +65,18 @@ class Midfielder(Player):
 
 # Define the Defender sub-class
 class Defender(Player):
-    def __init__(
-        self,
-        name,
-        nationality,
-        position,
-        squad,
-        age,
-        born,
-        matches_played,
-        starts,
-        minutes,
-        goals,
-        assists,
-        yellow_card,
-        red_card,
-        xG,
-        npxG,
-        xAG,
-        PrgC,
-        PrgP,
-        PrgR,
-        tackles,
-        attempts,
-        shots_blocked,
-        passes_blocked,
-        interceptions,
-        clears,
-        errors,
-    ):
-        super().__init__(
-            self,
-            name,
-            nationality,
-            position,
-            squad,
-            age,
-            born,
-            matches_played,
-            starts,
-            minutes,
-            goals,
-            assists,
-            yellow_card,
-            red_card,
-            xG,
-            npxG,
-            xAG,
-            PrgC,
-            PrgP,
-            PrgR,
-        )
-        self.tackles = tackles
-        self.attempts = attempts
-        self.shots_blocked = shots_blocked
-        self.passes_blocked = passes_blocked
-        self.interceptions = interceptions
-        self.clears = clears
-        self.errors = errors
+    def __init__(self, row):
+        super().__init__(row)
+        self.tackles = row["Tkl"]  # Tackles
+        self.attempts = row["Att"]  # Tackles Attempted
+        self.tackles_pct = row["Tkl%"]  # Tackles %
+        self.challenges_lost = row["Lost"]  # Challenges Lost
+        self.blocks = row["Blocks"]  # Blocks
+        self.shots_blocked = row["Sh"]  # shots Blocks
+        self.passes_blocked = row["Pass"]  # Passes Blocked
+        self.interceptions = row["Int"]  # Interceptions
+        self.clears = row["Clr"]  # Clears
+        self.errors = row["Err"]  # Errors
 
     def __str__(self):
         return f"{super().__str__()} - Tackles: {self.tackles} - Interceptions: {self.interceptions}"
@@ -254,60 +84,17 @@ class Defender(Player):
 
 # Define the Goalkeeper sub-class
 class Goalkeeper(Player):
-    def __init__(
-        self,
-        name,
-        nationality,
-        position,
-        squad,
-        age,
-        born,
-        matches_played,
-        starts,
-        minutes,
-        goals,
-        assists,
-        yellow_card,
-        red_card,
-        xG,
-        npxG,
-        xAG,
-        PrgC,
-        PrgP,
-        PrgR,
-        GA,
-        SoTA,
-        Saves,
-        CS,
-        PKsv,
-        PKm,
-    ):
-        super().__init__(
-            self,
-            name,
-            nationality,
-            position,
-            squad,
-            age,
-            born,
-            matches_played,
-            starts,
-            minutes,
-            goals,
-            assists,
-            yellow_card,
-            red_card,
-            xG,
-            npxG,
-            xAG,
-            PrgC,
-            PrgP,
-            PrgR,
-        )
-        self.saves = Saves
-        self.clean_sheets = CS
-        self.PK_saved = PKsv
-        self.PK_missed = PKm
+    def __init__(self, row):
+        super().__init__(row)
+        self.goals_against = row["GA"]  # Goals Against
+        self.shots_on_target_against = row["SoTA"]  # Shots on Target Against
+        self.saves = row["Saves"]  # Saves
+        self.save_pct = row["Save%"]  # Save %
+        self.clean_sheets = row["CS"]  # Clean Sheets
+        self.clean_sheets_pct = row["CS%"]  # Clean Sheets %
+        self.penalty_kicks_against = row["PKA"]  # Penalty Kicks Against
+        self.penalty_kicks_saved = row["PKsv"]  # Penalty Kicks Saved
+        self.penalty_kicks_missed = row["PKm"]  # Penalty Kicks Missed
 
     def __str__(self):
         return f"{super().__str__()} - Saves: {self.saves} - Clean Sheets: {self.clean_sheets}"
@@ -340,12 +127,15 @@ df[num_cols] = df[num_cols].apply(pd.to_numeric)
 # remove PK and Pkatt columns
 df = df.loc[:, ~df.columns.str.startswith(("PK", "Pkatt"))]
 
+# remove G+A G-PK and xnxG+xAG columns
+df = df.loc[:, ~df.columns.str.startswith(("G+A", "G-PK", "xG+xA"))]
+
 # extend data by goalkeeper data
 df_gk = pd.read_csv("data/bundesliga_gk_stats.csv")
 
 # remove all redundant columns
 df_gk = df_gk.loc[:, ~df_gk.columns.str.startswith(("Playing", "-additional"))]
-df_gk = df_gk.iloc[:, 1:-1]
+df_gk = df_gk.iloc[:, 1:-2]
 
 # first row should be column
 df_gk.columns = df_gk.iloc[0]
@@ -445,38 +235,91 @@ print(len(df_gk) + len(df_mf) + len(df_df) + len(df_fw))
 
 # match id of players dataframe with the other dataframes by player name, nation and position
 df_gk = df_gk.merge(df, on=["Player", "Nation", "Pos", "Age"], how="inner")
-df_gk = df_gk.loc[:, :"id"]
 
+# remove all columns ending with _y
+df_gk = df_gk.loc[:, ~df_gk.columns.str.endswith("_y")]
+
+# id on first column
 fc = df_gk.pop("id")
 df_gk.insert(0, "id", fc)
 
 # remove column name suffix
 df_gk.columns = df_gk.columns.str.replace("_x", "")
 
-
+# match id, midfielder
 df_mf = df_mf.merge(df, on=["Player", "Nation", "Pos", "Age"], how="inner")
-df_mf = df_mf.loc[:, :"id"]
 
+# remove all columns ending with _y
+df_mf = df_mf.loc[:, ~df_mf.columns.str.endswith("_y")]
+
+# id on first column
 fc = df_mf.pop("id")
 df_mf.insert(0, "id", fc)
 
 # remove suffix
 df_mf.columns = df_mf.columns.str.replace("_x", "")
 
+# match id, defender
 df_df = df_df.merge(df, on=["Player", "Nation", "Pos", "Age"], how="inner")
-df_df = df_df.loc[:, :"id"]
 
+# remove all columns ending with _y
+df_df = df_df.loc[:, ~df_df.columns.str.endswith("_y")]
+
+# id on first column
 fc = df_df.pop("id")
 df_df.insert(0, "id", fc)
 
 # remove suffix
 df_df.columns = df_df.columns.str.replace("_x", "")
 
+# match id, forward
 df_fw = df_fw.merge(df, on=["Player", "Nation", "Pos", "Age"], how="inner")
-df_fw = df_fw.loc[:, :"id"]
 
+# remove all columns ending with _y
+df_fw = df_fw.loc[:, ~df_fw.columns.str.endswith("_y")]
+
+# id on first column
 fc = df_fw.pop("id")
 df_fw.insert(0, "id", fc)
 
 # remove suffix
 df_fw.columns = df_fw.columns.str.replace("_x", "")
+
+# remove per 90 columns
+df_gk = df_gk.loc[:, ~df_gk.columns.str.endswith("90")]
+df_mf = df_mf.loc[:, ~df_mf.columns.str.endswith("90")]
+df_df = df_df.loc[:, ~df_df.columns.str.endswith("90")]
+df_fw = df_fw.loc[:, ~df_fw.columns.str.endswith("90")]
+
+# remove W D and L columns from df_gk
+df_gk = df_gk.loc[:, ~df_gk.columns.str.startswith("W")]
+df_gk = df_gk.loc[:, ~df_gk.columns.str.startswith("D")]
+df_gk = df_gk.loc[:, ~df_gk.columns.str.startswith("L")]
+
+# remove pkatt from df_gk
+df_gk = df_gk.loc[:, ~df_gk.columns.str.startswith("PKatt")]
+
+
+# create instances of each subclass
+gk_instances = []
+for index, row in df_gk.iterrows():
+    gk = Goalkeeper(row)
+    gk_instances.append(gk)
+
+mf_instances = []
+for index, row in df_mf.iterrows():
+    mf = Midfielder(row)
+    mf_instances.append(mf)
+
+df_instances = []
+for index, row in df_df.iterrows():
+    df = Defender(row)
+    df_instances.append(df)
+
+fw_instances = []
+for index, row in df_fw.iterrows():
+    fw = Striker(row)
+    fw_instances.append(fw)
+
+# create a list of all players
+players = gk_instances + mf_instances + df_instances + fw_instances
