@@ -1,4 +1,5 @@
 import pandas as pd
+import matplotlib.pyplot as plt
 
 
 # Define the Player parent class
@@ -42,6 +43,40 @@ class Striker(Player):
     def __str__(self):
         return f"{super().__str__()} - Goals: {self.goals} - Shots: {self.shots}"
 
+    def goals_comparison(self, other):
+        if self.goals > other.goals:
+            return f"{self.player} is a better striker than {other.player}"
+        elif self.goals < other.goals:
+            return f"{other.player} is a better striker than {self.player}"
+        else:
+            return f"{self.player} and {other.player} are equally good strikers"
+
+    def compare_with_others(self, players):
+        xg_values = [player.xG for player in players]
+        xag_values = [player.xAG for player in players]
+
+        # create scatter plot of xG vs. xA for all players
+        plt.scatter(xag_values, xg_values, c="b", marker="x", label="Other Players")
+
+        # highlight the current player's position on the plot with a red marker
+        current_player_index = players.index(self)
+        plt.scatter(
+            xag_values[current_player_index],
+            xg_values[current_player_index],
+            c="r",
+            marker="o",
+            label=self.player,
+        )
+
+        # add axis labels and title to the plot
+        plt.xlabel("xAG")
+        plt.ylabel("xG")
+        plt.legend(loc="upper left")
+        plt.grid(True)
+        plt.title("Comparison of xG vs. xGA for all Strikers")
+
+        plt.show()
+
 
 # Define the Midfielder sub-class
 class Midfielder(Player):
@@ -80,6 +115,37 @@ class Defender(Player):
 
     def __str__(self):
         return f"{super().__str__()} - Tackles: {self.tackles} - Interceptions: {self.interceptions}"
+
+    def compare_with_all(self, players):
+        # Create two empty lists to store the names and difference of each player compared to the current player
+        names = []
+        differences = []
+
+        # Iterate over all the players in the input list
+        for player in players:
+            # Check if the player is a Defender instance
+            if isinstance(player, Defender):
+                # Calculate the Difference between the current player and the player in the loop based on their tackles and interceptions
+                difference = (
+                    (self.tackles - player.tackles)
+                    + (self.interceptions - player.interceptions)
+                ) / 2
+                # Add the player's name and difference to the corresponding lists
+                names.append(player.player)
+                differences.append(difference)
+
+        # Print the results
+        print(f"Comparison of {self.player} with all other Defenders:")
+        for name, difference in zip(names, differences):
+            print(f"{name}: {difference}")
+
+        # Plot the results
+        plt.bar(names, differences)
+        plt.title(f"Comparison of {self.player} with all other Defenders")
+        plt.xlabel("Player Name")
+        plt.ylabel("difference")
+        plt.xticks(rotation=90, fontsize=4)
+        plt.show()
 
 
 # Define the Goalkeeper sub-class
@@ -146,6 +212,10 @@ df_gk["Nation"] = df_gk["Nation"].str[-3:]
 df_gk["Pos"] = df_gk["Pos"].str[:2]
 df_gk["Age"] = pd.to_numeric(df_gk["Age"].str[:2])
 
+# change from object to numeric
+num_cols = list(df_gk.loc[:, "Born":].columns.values)
+df_gk[num_cols] = df_gk[num_cols].apply(pd.to_numeric)
+
 # extend data by passing stats (for midfielder)
 df_mf = pd.read_csv("data/bundesliga_mf_stats.csv")
 df_mf = df_mf.loc[
@@ -179,6 +249,9 @@ df_mf = df_mf.loc[df_mf["Pos"] == "MF", :]
 # remove the first column
 df_mf = df_mf.iloc[:, 1:]
 
+# change from object to numeric
+num_cols = list(df_mf.loc[:, "Born":].columns.values)
+df_mf[num_cols] = df_mf[num_cols].apply(pd.to_numeric)
 
 # extend data by defensive stats (for defender)
 df_df = pd.read_csv("data/bundesliga_df_stats.csv")
@@ -203,6 +276,10 @@ df_df = df_df.loc[df_df["Pos"] == "DF", :]
 # remove tkl+int column
 df_df = df_df.drop("Tkl+Int", axis=1)
 
+# change from object to numeric
+num_cols = list(df_df.loc[:, "Born":].columns.values)
+df_df[num_cols] = df_df[num_cols].apply(pd.to_numeric)
+
 # extend data by attacking stats (for forward)
 df_fw = pd.read_csv("data/bundesliga_fw_stats.csv")
 
@@ -223,6 +300,10 @@ df_fw = df_fw.loc[df_fw["Pos"] == "FW", :]
 
 # remove the last 2 columns and the first column
 df_fw = df_fw.iloc[:, 1:-2]
+
+# change from object to numeric
+num_cols = list(df_fw.loc[:, "Born":].columns.values)
+df_fw[num_cols] = df_fw[num_cols].apply(pd.to_numeric)
 
 # create a column id for each player
 df["id"] = df.index
@@ -323,3 +404,15 @@ for index, row in df_fw.iterrows():
 
 # create a list of all players
 players = gk_instances + mf_instances + df_instances + fw_instances
+
+
+fw_instances[60].compare_with_others(fw_instances)
+
+
+abcd = [1, 5, 6, 8, 23, 3]
+abcd[0:3] + abcd[4::]
+
+df_instances[17].compare_with_all(df_instances)
+
+df_instances[2].__dict__
+fw_instances[8].__dict__
