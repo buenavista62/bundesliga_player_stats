@@ -1,5 +1,6 @@
 import pandas as pd
 import matplotlib.pyplot as plt
+import pandas_profiling as pp
 
 
 # Define the Player parent class
@@ -28,6 +29,59 @@ class Player:
 
     def __str__(self):
         return f"{self.player} ({self.nation}) - {self.pos} - Age: {self.age}"
+
+    def get_club_players(players, team_name, position=None):
+        if position == None:
+            return [player.player for player in players if player.squad == team_name]
+        elif position in ["DF", "MF", "FW", "GK"]:
+            return [
+                player.player
+                for player in players
+                if player.squad == team_name and player.pos == position
+            ]
+        else:
+            return "Invalid Position"
+
+    def team_analysis(players, team_name):
+        team_players = Player.get_club_players(players, team_name)
+        team_players.sort()
+        print(f"Players in {team_name}: {team_players}")
+        print(f"Total Players: {len(team_players)}")
+
+        team_data = [
+            players.__dict__ for players in players if players.squad == team_name
+        ]
+        team_data = pd.DataFrame.from_dict(team_data)
+
+        print(f"Total Goals: {team_data['goals'].sum()}")
+        print(f"Total Assists: {team_data['assists'].sum()}")
+        print(f"Total Minutes Played: {team_data['minutes'].sum()}")
+        print(f"Total Yellow Cards: {team_data['yellow_card'].sum()}")
+        print(f"Total Red Cards: {team_data['red_card'].sum()}")
+        print(f"Total Expected Goals: {team_data['xG'].sum()}")
+        print(f"Total Non-Penalty Expected Goals: {team_data['npxG'].sum()}")
+
+        team_data["goals_per_90"] = team_data["goals"] / (team_data["minutes"] / 90)
+        team_data["assists_per_90"] = team_data["assists"] / (team_data["minutes"] / 90)
+        team_data["goals_and_assists_per_90"] = (
+            team_data["goals_per_90"] + team_data["assists_per_90"]
+        )
+        team_data["xG_per_90"] = team_data["xG"] / (team_data["minutes"] / 90)
+        team_data["npxG_per_90"] = team_data["npxG"] / (team_data["minutes"] / 90)
+
+        pp.ProfileReport(team_data)
+
+        return team_data
+
+
+Hoffenheim_team = Player.team_analysis(players, "Hoffenheim")
+
+
+Player.team_analysis(players, "Hoffenheim")
+Player.get_club_players(players, "Hoffenheim", "FW")
+
+
+players[players["Squad"] == "Hoffenheim"]
 
 
 # Define the Striker sub-class
@@ -73,7 +127,7 @@ class Striker(Player):
         plt.ylabel("xG")
         plt.legend(loc="upper left")
         plt.grid(True)
-        plt.title("Comparison of xG vs. xGA for all Strikers")
+        plt.title("Comparison of xG vs. xAG for all Strikers")
 
         plt.show()
 
@@ -416,3 +470,9 @@ df_instances[17].compare_with_all(df_instances)
 
 df_instances[2].__dict__
 fw_instances[8].__dict__
+
+[player.player for player in players if player.squad == "Hoffenheim"]
+
+oppp = [player.__dict__ for player in players if player.squad == "Hoffenheim"]
+
+pd.DataFrame.from_dict(oppp)
