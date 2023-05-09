@@ -1,6 +1,6 @@
 import pandas as pd
 import matplotlib.pyplot as plt
-import pandas_profiling as pp
+from ydata_profiling import ProfileReport
 
 
 # Define the Player parent class
@@ -30,6 +30,7 @@ class Player:
     def __str__(self):
         return f"{self.player} ({self.nation}) - {self.pos} - Age: {self.age}"
 
+    @staticmethod
     def get_club_players(players, team_name, position=None):
         if position == None:
             return [player.player for player in players if player.squad == team_name]
@@ -42,6 +43,7 @@ class Player:
         else:
             return "Invalid Position"
 
+    @staticmethod
     def team_analysis(players, team_name):
         team_players = Player.get_club_players(players, team_name)
         team_players.sort()
@@ -69,19 +71,13 @@ class Player:
         team_data["xG_per_90"] = team_data["xG"] / (team_data["minutes"] / 90)
         team_data["npxG_per_90"] = team_data["npxG"] / (team_data["minutes"] / 90)
 
-        pp.ProfileReport(team_data)
+        profile = ProfileReport(team_data, title=f"{team_name} Team Analysis")
 
-        return team_data
+        return profile
 
-
-Hoffenheim_team = Player.team_analysis(players, "Hoffenheim")
-
-
-Player.team_analysis(players, "Hoffenheim")
-Player.get_club_players(players, "Hoffenheim", "FW")
-
-
-players[players["Squad"] == "Hoffenheim"]
+    @staticmethod
+    def player_analysis(players, player_name):
+        
 
 
 # Define the Striker sub-class
@@ -105,15 +101,16 @@ class Striker(Player):
         else:
             return f"{self.player} and {other.player} are equally good strikers"
 
-    def compare_with_others(self, players):
-        xg_values = [player.xG for player in players]
-        xag_values = [player.xAG for player in players]
+    def compare_striker(self, players):
+        striker = [player for player in players if isinstance(player, Striker)]
+        xg_values = [player.xG for player in striker]
+        xag_values = [player.xAG for player in striker]
 
         # create scatter plot of xG vs. xA for all players
         plt.scatter(xag_values, xg_values, c="b", marker="x", label="Other Players")
-
+        print(striker.index(self))
         # highlight the current player's position on the plot with a red marker
-        current_player_index = players.index(self)
+        current_player_index = striker.index(self)
         plt.scatter(
             xag_values[current_player_index],
             xg_values[current_player_index],
@@ -139,7 +136,7 @@ class Midfielder(Player):
         self.passes_completed = row["Cmp"]  # Passes Completed
         self.passed_attempted = row["Att"]  # Passes Attempted
         self.passes_completed_pct = row["Cmp%"]  # Passes Completed %
-        self.total_passing_distance = row["TotDist"]
+        self.total_passing_distance = row["TotDist"]  # Total Passing Distance
         self.progressive_passing_distance = row[
             "PrgDist"
         ]  # Progressive Passing Distance
@@ -170,7 +167,7 @@ class Defender(Player):
     def __str__(self):
         return f"{super().__str__()} - Tackles: {self.tackles} - Interceptions: {self.interceptions}"
 
-    def compare_with_all(self, players):
+    def compare_defender(self, players):
         # Create two empty lists to store the names and difference of each player compared to the current player
         names = []
         differences = []
@@ -210,6 +207,7 @@ class Goalkeeper(Player):
         self.shots_on_target_against = row["SoTA"]  # Shots on Target Against
         self.saves = row["Saves"]  # Saves
         self.save_pct = row["Save%"]  # Save %
+        ...
         self.clean_sheets = row["CS"]  # Clean Sheets
         self.clean_sheets_pct = row["CS%"]  # Clean Sheets %
         self.penalty_kicks_against = row["PKA"]  # Penalty Kicks Against
@@ -457,22 +455,20 @@ for index, row in df_fw.iterrows():
     fw_instances.append(fw)
 
 # create a list of all players
-players = gk_instances + mf_instances + df_instances + fw_instances
+players_df = gk_instances + mf_instances + df_instances + fw_instances
+
+# create test cases
+fw_instances[2].goals_comparison(fw_instances[3])
+
+fw_instances[45].compare_striker(players_df)
+
+df_instances[60].compare_defender(players_df)
+
+Player.get_club_players(players_df, "Hoffenheim")
+
+bvb = Player.team_analysis(players_df, "Dortmund")
+
+#bvb_desc = bvb.get_description()
 
 
-fw_instances[60].compare_with_others(fw_instances)
-
-
-abcd = [1, 5, 6, 8, 23, 3]
-abcd[0:3] + abcd[4::]
-
-df_instances[17].compare_with_all(df_instances)
-
-df_instances[2].__dict__
-fw_instances[8].__dict__
-
-[player.player for player in players if player.squad == "Hoffenheim"]
-
-oppp = [player.__dict__ for player in players if player.squad == "Hoffenheim"]
-
-pd.DataFrame.from_dict(oppp)
+bvb.to_file("bvb_analysis.html")
