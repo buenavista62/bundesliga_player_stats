@@ -75,10 +75,6 @@ class Player:
 
         return profile
 
-    @staticmethod
-    def player_analysis(players, player_name):
-        
-
 
 # Define the Striker sub-class
 class Striker(Player):
@@ -108,7 +104,7 @@ class Striker(Player):
 
         # create scatter plot of xG vs. xA for all players
         plt.scatter(xag_values, xg_values, c="b", marker="x", label="Other Players")
-        print(striker.index(self))
+
         # highlight the current player's position on the plot with a red marker
         current_player_index = striker.index(self)
         plt.scatter(
@@ -467,8 +463,5 @@ df_instances[60].compare_defender(players_df)
 Player.get_club_players(players_df, "Hoffenheim")
 
 bvb = Player.team_analysis(players_df, "Dortmund")
-
-#bvb_desc = bvb.get_description()
-
 
 bvb.to_file("bvb_analysis.html")
